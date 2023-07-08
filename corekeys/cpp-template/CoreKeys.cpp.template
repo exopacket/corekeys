@@ -1,0 +1,117 @@
+#include "../include/CoreKeys.h"
+#include "easy_encrypt/EasyEncrypt.h"
+#include "vars/maps.cpp"
+#include "vars/arrays.cpp"
+
+std::string CoreKeys::get(uint32_t master_seed, std::string master_id, uint32_t key_seed, std::string key_id) {
+
+    return EasyEncrypt::AES::Hex::ecb256(
+            CoreKeys::get_encrypted_key(key_seed, key_id),
+            CoreKeys::get_master_key(master_seed, master_id),
+            false
+    );
+
+}
+
+std::string CoreKeys::get_master_key(uint32_t master_seed, std::string master_id) {
+
+    uint32_t DISARRAY_SEED_MAGIC = $DISARAY_SEED_MAGIC_MASTER$;
+    srand(CoreKeys::Disarray::get_seed(DISARRAY_SEED_MAGIC));
+
+    for(int i=0; i<257; i++) {
+
+        uint8_t index = -1;
+        uint8_t val = -1;
+        uint8_t master_byte_val = -1;
+        std::string res;
+
+        if(i == 256) {
+            index = rand() % 256;
+            val = rand() % 256;
+            master_byte_val = rand() % 256;
+            res = get_keys_function_map(master_byte_val);
+            return res;
+        } else {
+            for(int x=0; x<256; x++) {
+                val = ((uint8_t) ((unsigned char) CoreKeys::Disarray::disarray1[x]));
+                index = val + CoreKeys::Disarray::ADJUSTMENT_VALUE;
+                res = get_id_function_map(index);
+                if(res == master_id) {
+                    master_byte_val = ((uint8_t) ((unsigned char) CoreKeys::Disarray::disarray2[val]));
+                    master_byte_val = master_byte_val + master_seed;
+                    res = get_keys_function_map(master_byte_val);
+                    return res;
+                }
+            }
+
+        }
+    }
+
+    return "";
+
+}
+
+std::string CoreKeys::get_encrypted_key(uint32_t key_seed, std::string key_id) {
+
+    uint32_t DISARRAY_SEED_MAGIC = $DISARRAY_SEED_MAGIC$;
+    srand(CoreKeys::Disarray::get_seed(DISARRAY_SEED_MAGIC));
+
+    for(int i=0; i<257; i++) {
+
+        uint8_t index = -1;
+        uint8_t val = -1;
+        uint8_t key_byte_val = -1;
+        std::string res;
+
+        if(i == 256) {
+            index = rand() % 256;
+            val = rand() % 256;
+            key_byte_val = rand() % 256;
+            res = get_keys_function_map(key_byte_val);
+            return res;
+        } else {
+            for(int x=0; x<8; x++) {
+                val = ((uint8_t) ((unsigned char) CoreKeys::Disarray::disarray3[x]));
+                index = val + CoreKeys::Disarray::ADJUSTMENT_VALUE;
+                res = get_id_function_map(index);
+                if(res == key_id) {
+                    key_byte_val = ((uint8_t) ((unsigned char) CoreKeys::Disarray::disarray4[val]));
+                    key_byte_val = key_byte_val + key_seed;
+                    res = get_keys_function_map(key_byte_val);
+                    return res;
+                }
+            }
+
+        }
+    }
+
+    return "";
+
+}
+
+int CoreKeys::Disarray::get_seed(uint32_t magic_val) {
+    char at_index = CoreKeys::Disarray::seeds[CoreKeys::Disarray::SEED_INDEX];
+    return ((u_int8_t) ((unsigned char) at_index)) + magic_val;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
